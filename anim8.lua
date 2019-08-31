@@ -224,7 +224,9 @@ local function seekFrameIndex(intervals, timer)
 end
 
 function Animation:update(dt)
-  if self.status ~= "playing" then return end
+  if self.status == "paused" then return end
+
+  local oldposition = self.position
 
   self.timer = self.timer + dt
   local loops = math.floor(self.timer / self.totalDuration)
@@ -235,6 +237,11 @@ function Animation:update(dt)
   end
 
   self.position = seekFrameIndex(self.intervals, self.timer)
+  if self.status == "pausing" then
+    if self.position ~= oldposition then
+      self.status = "paused"
+    end
+  end
 end
 
 function Animation:pause()
@@ -292,6 +299,10 @@ end
 function Animation:getDimensions()
   local _,_,w,h = self.frames[self.position]:getViewport()
   return w,h
+end
+
+function Animation:pauseOnNextFrame()
+  self.status = "pausing"
 end
 
 -----------------------------------------------------------
